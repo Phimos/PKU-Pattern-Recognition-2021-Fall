@@ -69,6 +69,80 @@ class MultilayerPerceptrons(ClassifierEstimator):
         return y_pred.flatten().long()
 
 
+class nonlinearSVM(ClassifierEstimator):
+    def __init__(self, n_samples: int = 10000, in_features: int = 56, C: float = 1.0, kernel: str = "rbf", **kwargs: Any) -> None:
+        super().__init__()
+        self.C = C
+        self.kernel = kernel
+        self.kernel_func = self.select_kernel_func(kernel, **kwargs)
+
+        self.w = torch.zeros(in_features, 1)
+        self.b = torch.zeros(1)
+
+    def select_kernel_func(self, kernel: str, **kwargs: Any):
+        def linear(x: Tensor, y: Tensor):
+            return torch.dot(x, y.T)
+
+        def rbf(x: Tensor, y: Tensor, gamma: float):
+            return torch.exp(-gamma * torch.cdist(x, y, p=2))
+
+        def polynomial(x: Tensor, y: Tensor, degree: float):
+            return (linear(x, y) + 1) ** degree
+
+        if kernel == "linear":
+            return linear
+        elif kernel == "rbf":
+            return partial(rbf, gamma=kwargs.get("gamma", 1.0))
+        elif kernel == "poly":
+            return partial(polynomial, degree=kwargs.get("degree", 2.0))
+        else:
+            raise ValueError("Unknown kernel function")
+
+    def fit(self, X: Tensor, y: Tensor) -> None:
+        self.X = X
+        self.y = torch.sign(y.float() - 0.5)
+        self.alpha = torch.zeros(X.shape[0], 1)
+
+        xi = F.relu(
+            1 - self.y * ((self.y.T * self.alpha.T * self.kernel_func(X, X)).sum(dim=-1) + self.b))
+        pass
+
+    def objective_function(self, xi: Tensor):
+        return 0.5 * self.w.norm() ** 2 + self.C * xi.sum()
+
+    def dual_objective_function(self, X: Tensor, y: Tensor, alpha: Tensor, kernel_func: Callable):
+        return alpha.sum() - 0.5 * ((y @ y.T) * (alpha @ alpha.T) * kernel_func(X, X)).sum()
+
+    def update_alpha(self, idx1, idx2, alpha, y, E, K):
+        if y[idx1] != y[idx2]:
+            U = torch.clamp(alpha[idx2] - alpha[idx1], min=0)
+            V = torch.clamp(self.C - alpha[idx1] + alpha[idx2], max=self.C)
+        else:
+            U = torch.clamp(alpha[idx1] + alpha[idx2] - self.C, min=0)
+            V = torch.clamp(alpha[idx1] + alpha[idx2], max=self.C)
+
+        E = (alpha.T * y.T * K).sum(dim=-1) + self.b - y
+
+        alpha_2_old = alpha[idx2]
+        alpha[idx2] += y[idx2] * (E[idx1] - E[idx2]) / \
+            (K[idx1, idx1] + K[idx2, idx2] - 2 * K[idx1, idx2])
+        alpha[idx2] = torch.clamp(alpha[idx2], min=U, max=V)
+        alpha[idx1] += y[idx1] * y[idx2] * (alpha_2_old - alpha[idx2])
+        return alpha
+
+    def select_index1(self):
+        pass
+
+    def select_index2(self):
+        pass
+
+    def forward(self, X: Tensor) -> Tensor:
+        return (self.alpha.T * self.y.T * self.kernel_func(X, self.X)).sum(dim=-1) + self.b
+
+    def predict(self, X: Tensor) -> Tensor:
+        return torch.relu(torch.sign(self.forward(X)))
+
+
 if __name__ == '__main__':
     # Load data
     data = loadmat('data.mat')['data']
