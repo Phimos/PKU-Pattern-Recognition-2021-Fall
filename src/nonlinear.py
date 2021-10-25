@@ -82,7 +82,7 @@ class nonlinearSVM(ClassifierEstimator):
 
     def select_kernel_func(self, kernel: str, **kwargs: Any):
         def linear(x: Tensor, y: Tensor):
-            return torch.dot(x, y.T)
+            return x @ y.T
 
         def rbf(x: Tensor, y: Tensor, gamma: float):
             return torch.exp(-gamma * torch.cdist(x, y, p=2))
@@ -188,7 +188,7 @@ class KernelFisher(ClassifierEstimator):
 
     def select_kernel_func(self, kernel: str, **kwargs: Any):
         def linear(x: Tensor, y: Tensor):
-            return torch.dot(x, y.T)
+            return x @ y.T
 
         def rbf(x: Tensor, y: Tensor, gamma: float):
             return torch.exp(-gamma * torch.cdist(x, y, p=2))
