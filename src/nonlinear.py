@@ -1,11 +1,13 @@
 from functools import partial
 from typing import Any, Callable, List
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from scipy.io import loadmat
+from sklearn.svm import SVC
 from torch import Tensor
 from torch.optim import Adam
 
@@ -243,16 +245,50 @@ if __name__ == '__main__':
     X_train, X_test = X[indices[:train_size]], X[indices[train_size:]]
     y_train, y_test = y[indices[:train_size]], y[indices[train_size:]]
 
-    #model = MultilayerPerceptrons()
-    #model.fit(X_train, y_train)
-    #print("Multilayer Perceptrons Accuracy:", model.score(X_test, y_test))
-
-    model = KernelFisher(kernel="rbf", gamma=1.0)
+    # Train MLP
+    model = MultilayerPerceptrons()
     model.fit(X_train, y_train)
-    print(model.score(X_train, y_train))
-    print(model.score(X_test, y_test))
+    print("Multilayer Perceptrons Accuracy:", model.score(X_test, y_test))
 
-    model = KernelFisher(kernel="poly", degree=3.0)
-    model.fit(X_train, y_train)
-    print(model.score(X_train, y_train))
-    print(model.score(X_test, y_test))
+    # Plot loss & accuracy
+    plt.plot([item['loss'] for item in model.history])
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss vs. Epoch')
+    plt.savefig('nn_loss.png', dpi=300)
+    plt.close()
+
+    plt.plot([item['accuracy'] for item in model.history])
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy vs. Epoch')
+    plt.savefig('nn_accuracy.png', dpi=300)
+    plt.close()
+
+    # Different kernels
+    for kernel in ["linear", "rbf", "poly"]:
+        model = SVC(kernel=kernel, gamma=1, degree=3)
+        model.fit(X_train.numpy(), y_train.numpy())
+        print("Kernel:", kernel)
+        print("SVM Train Accuracy:", model.score(
+            X_train.numpy(), y_train.numpy()))
+        print("SVM Test Accuracy:", model.score(
+            X_test.numpy(), y_test.numpy()))
+
+        model = KernelFisher(kernel=kernel, gamma=1, degree=3)
+        model.fit(X_train, y_train)
+        print("Kernel:", kernel)
+        print("Kernel Fisher Train Accuracy:", model.score(X_train, y_train))
+        print("Kernel Fisher Test Accuracy:", model.score(X_test, y_test))
+
+    # Different gamma
+    for gamma in ['scale', 'auto', 1]:
+        model = SVC(kernel='rbf', gamma=gamma)
+        model.fit(X_train.numpy(), y_train.numpy())
+        print("Gamma:", gamma, "SVC Accuracy:",
+              model.score(X_test.numpy(), y_test.numpy()))
+
+        model = KernelFisher(kernel="rbf", gamma=model._gamma)
+        model.fit(X_train, y_train)
+        print("Gamma:", gamma, "Kernel Fisher Accuracy:",
+              model.score(X_test, y_test))
