@@ -160,7 +160,9 @@ $$
 $$
 \mathbf{\alpha} = (\mathbf{G}+ \lambda \mathbf{I})^{-1}\tilde{\mathbf{y}}
 $$
-对于核函数表达形式，设核矩阵为$\mathbf{K}$，有$\mathbf{K}_{ij} = \langle\mathbf{x}_i, \mathbf{x}_j\rangle$，核函数表达形式为：
+对于核函数表达形式，定义核函数$K:X\times X\rightarrow R$，有$K(\mathbf{x}, \mathbf{z}) = \langle \phi(\mathbf{x}), \phi(\mathbf{z})\rangle$。
+
+设核矩阵为$\mathbf{K}$，有$\mathbf{K}_{ij} = \langle \phi(\mathbf{x}_i), \phi(\mathbf{x}_j)\rangle$，核函数表达形式为：
 $$
 \mathbf{\alpha} =(\mathbf{K}+ \lambda \mathbf{I})^{-1}\tilde{\mathbf{y}}
 $$
