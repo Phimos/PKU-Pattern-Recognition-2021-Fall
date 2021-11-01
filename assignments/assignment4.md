@@ -90,6 +90,14 @@ $$
 
 将其带入原式便可以得到$b_i(x)$，两种核函数的关联如前文所示。
 
+两个函数相同最终表示都如下所示：
+
+<img src="fx.png" alt="fx" style="zoom:50%;" />
+
+观察$y_ib_i(x)$的图像可以发现，在$x_i$处均只有一个函数非$0$，所以可以保证在$x_i$处两种写法值相同。所有的$b_i(x)$在分段上都是线性函数，线性组合之后仍然是线性函数，这样只要确保在每一端的两端断电值相同，就能够确保两种写法最终的结果一致。
+
+<img src="/Users/pims/Documents/GitHub/PKU-Pattern-Recognition-2021-Fall/assignments/ybx.png" alt="ybx" style="zoom:50%;" />
+
 ## 2.
 
 由核函数定义可以知道：
@@ -117,7 +125,7 @@ $$
 \begin{aligned}
 \varphi(x)^{T} \varphi(z) &= \frac12 + \sum_{i=1}^k \left[\cos(ix)\cos(iz) +\sin(ix)\sin(iz) \right]
 \\
-&= \frac12 + \sum_{i=1}^k \left[\frac12(\cos(ix+iz)) + \cos(ix-iz)) -\frac12(\cos(ix+iz)) - \cos(ix-iz))\right]
+&= \frac12 + \sum_{i=1}^k \left[\frac12(\cos(ix+iz) + \cos(ix-iz)) -\frac12(\cos(ix+iz) - \cos(ix-iz))\right]
 \\
 &= \frac12 + \sum_{i=1}^k \cos(i(x-z))
 \\
