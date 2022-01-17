@@ -1,0 +1,10 @@
+Test Acc: 0.8250
+Test Acc: 0.8240
+Test Acc: 0.8030
+Test Acc: 0.8150
+Test Acc: 0.7960
+Test Acc: 0.8010
+Test Acc: 0.8140
+Test Acc: 0.8120
+Test Acc: 0.8150
+Test Acc: 0.8010
